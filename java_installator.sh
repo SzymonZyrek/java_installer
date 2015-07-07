@@ -252,14 +252,14 @@ then
   
 #CONFIGURATION
   JAVA_DIR=$UNPACKED_FILE_NAME
-  printf "JDK 1.${VERSION}.0_${UPDATE} installed at $TARGET_DIR/$JAVA_DIR\n"
+  printf "JDK 1.${VERSION}.0_${UPDATE} installed at $JAVA_DIR\n"
   #JAVA_HOME
   echo "Set \$JAVA_HOME in ~/.bashrc?(y/n)"
   ANSWER=$(read_yes_no)
   if [[ "$ANSWER" == "y" ]]
   then
-    echo "Setting \$JAVA_HOME to $TARGET_DIR/$JAVA_DIR"
-    echo "export JAVA_HOME=$TARGET_DIR/$JAVA_DIR" >> ~/.bashrc
+    echo "Setting \$JAVA_HOME to $JAVA_DIR"
+    echo "export JAVA_HOME=$JAVA_DIR" >> ~/.bashrc
   else
     echo "Skipping \$JAVA_HOME configuration"
   fi
@@ -268,8 +268,8 @@ then
   ANSWER2=$(read_yes_no)
   if [[ "$ANSWER2" == "y" ]]
   then
-    sudo update-alternatives --install /usr/bin/java java $TARGET_DIR/$JAVA_DIR/bin/java 1
-    sudo update-alternatives --install /usr/bin/javac javac $TARGET_DIR/$JAVA_DIR/bin/javac 1
+    sudo update-alternatives --install /usr/bin/java java $JAVA_DIR/bin/java 1
+    sudo update-alternatives --install /usr/bin/javac javac $JAVA_DIR/bin/javac 1
   else
     echo "Skipping update-alternatives configuration"
   fi

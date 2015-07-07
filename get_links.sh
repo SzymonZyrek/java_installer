@@ -12,11 +12,10 @@ ARCH=`arch`
 if [[ $ARCH =~ $REGEX ]]
 then
   ARCH="i586"
-elif [[ $ARCH =~ "x64" ]]
+elif [[ $ARCH =~ "64" ]]
 then
   ARCH="x64"
 fi
-
 HEADER=`uname -a`
 SOL_REGEX=[sS]ol
 LIN_REGEX=[lLinux]
@@ -42,7 +41,7 @@ rm -rf 2>/dev/null $VERSIONS_FILE_JRE
 #GET ALL DOWNLOAD LINKS
 while read LINE
 do
-  curl 2>/dev/null $LINE | sed -ne 's#.*"filepath":"\(http://download.oracle.com/otn/java/jdk/[-_/a-z0-9]*\(\.tar\.gz\|\.bin\)\).*#\1#p' | grep $SYSTEM | grep $ARCH | grep -v 'rpm' >> ALL_LINKS
+  curl 2>/dev/null $LINE | sed -ne 's#.*"filepath":"\(http://download.oracle.com/otn\(-pub\)\?/java/jdk/[-_/a-z0-9]*\(\.tar\.gz\|\.bin\)\).*#\1#p' | grep $SYSTEM | grep $ARCH | grep -v 'rpm'| grep -v 'demos' >> ALL_LINKS
 done < $SITES_FILE
 
 while read LINE
@@ -61,6 +60,7 @@ do
     MINOR_VERSION="00"
   fi
   URL=`echo $LINE | sed -e 's/otn/otn-pub/'`
+  URL=`echo $URL | sed -e 's/otn-pub-pub/otn-pub/'`
   ENTRY="${MAJOR_VERSION}#${MINOR_VERSION}#$URL"
   if [[ $JDKORJRE = "jdk" ]]
   then
