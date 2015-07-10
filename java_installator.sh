@@ -33,7 +33,7 @@ print_usage() {
   echo "	-l|--list		: list all avaiable jdk versions"
   echo "	-s|--search <STRING>	: filter avaiable jdk versions"
   echo "	-d|--jdk <VERSION>	: installs selected <VERSION> of jdk"
-  echo "	-r|--jre <VERSION>	: installs selected <VERSION> of jre (NOT YET WORKING, FOR NOW ALSO INSTALLS JDK^^)"
+  echo "	-r|--jre <VERSION>	: installs selected <VERSION> of jre"
   echo "	-t|--target		: outpuf folder, where to install?"
   echo "	-b|--bashrc		: adds \$JAVA_HOME to ~/.bashrc"
   echo "	-B|--no-bashrc		: doesn't add \$JAVA_HOME to ~/.bashrc"
