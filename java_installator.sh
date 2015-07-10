@@ -11,6 +11,12 @@ ALLVER_FILE=allver
 ARCHVER_FILE=archver
 ALLURLS_FILE=allurls
 FILTER=""
+DONT_ASK_ALTERNATIVES="n"
+DONT_ASK_BASHRC="n"
+DONT_ASK_WARNING="n"
+DO_BASHRC="n"
+DO_ALTERNATIVES="n"
+DONT_ASK="n"
 
 #STATE VARIABLES
 DOWNLOAD_STARTED=false
@@ -24,7 +30,6 @@ fetch_versions(){
   cd $SCRIPT_ROOT_DIR
   rm -rf 2>/dev/null $VERSIONS_FILE
   source get_links.sh
-  cat JDK_REPOSITORY | awk 'BEGIN{FS="#"} {if (a != $1 || b != $2) print $0; a=$1; b=$2 }' > $VERSIONS_FILE
 }
 
 terminate(){
@@ -82,8 +87,32 @@ while [[ $# > 0 ]]
 do
 key="$1"
 case $key in
+    -W|--dont-warn)
+    DONT_ASK_WARNING="y"
+    ;;
+    -b|--bashr)
+    DO_BASHRC="y"
+    DONT_ASK_BASHRC="y"
+    ;;
+    -B|--no-bashrc)
+    DO_BASHRC="n"
+    DONT_ASK_BASHRC="y"
+    ;;
+    -u|--help)
+    DO_ALTERNATIVES="y"
+    DONT_ASK_ALTERNATIVES="y"
+    ;;
+    -U|--help)
+    DO_ALTERNATIVES="n"
+    DONT_ASK_ALTERNATIVES="y"
+    ;;
     -h|--help)
     MODE="HELP"
+    ;;
+    -s|--silent)
+    DONT_ASK_ALTERNATIVES="y"
+    DONT_ASK_BASHRC="y"
+    DONT_ASK="y"
     ;;
     -t|--target)
     TARGET_DIR=$2
@@ -182,7 +211,7 @@ then
 elif [[ "$MODE" == "INSTALL" ]]
 then
   #WARN IF DEAFAULT TARGET
-  if [[ $TARGET_DIR == "/usr/lib/jvm" ]]
+  if [[ $TARGET_DIR == "/usr/lib/jvm" && $DONT_ASK_WARNING != "y" && $DONT_ASK != "y" ]]
   then
     echo "WARNINIG: you haven't selected --target installation directory, default value is /usr/lib/jvm. Is this ok?(y/n)"
     ANSWER=$(read_yes_no)
@@ -256,9 +285,16 @@ then
   JAVA_DIR=$UNPACKED_FILE_NAME
   printf "JDK 1.${VERSION}.0_${UPDATE} installed at $JAVA_DIR\n"
   #JAVA_HOME
-  echo "Set \$JAVA_HOME in ~/.bashrc?(y/n)"
-  ANSWER=$(read_yes_no)
-  if [[ "$ANSWER" == "y" ]]
+  if [[ $DONT_ASK != "y" && $DONT_ASK_BASHRC != "y" ]]
+  then
+    echo "Set \$JAVA_HOME in ~/.bashrc?(y/n)"
+    ANSWER=$(read_yes_no)
+    if [[ "$ANSWER" == "y" ]]
+    then
+      DO_BASHRC="y"
+    fi
+  fi
+  if [[ $DO_BASHRC == "y" ]]
   then
     echo "Setting \$JAVA_HOME to $JAVA_DIR"
     echo "export JAVA_HOME=$JAVA_DIR" >> ~/.bashrc
@@ -266,14 +302,21 @@ then
     echo "Skipping \$JAVA_HOME configuration"
   fi
   #UPDATE-ALTERNATIVES
-  echo "Update alternatives?(y/n)"
-  ANSWER2=$(read_yes_no)
-  if [[ "$ANSWER2" == "y" ]]
+  if [[ $DONT_ASK != "y" && $DONT_ASK_ALTERNATIVES != "y" ]]
   then
-    sudo update-alternatives --install /usr/bin/java java $JAVA_DIR/bin/java 1
-    sudo update-alternatives --install /usr/bin/javac javac $JAVA_DIR/bin/javac 1
-  else
-    echo "Skipping update-alternatives configuration"
+    echo "Update alternatives?(y/n)"
+    ANSWER2=$(read_yes_no)
+    if [[ "$ANSWER2" == "y" ]]
+    then
+      DO_ALTERNATIVES="y"
+    fi
+  fi
+  if [[ $DO_ALTERNATIVES == "y" ]]
+    then
+      sudo update-alternatives --install /usr/bin/java java $JAVA_DIR/bin/java 1
+      sudo update-alternatives --install /usr/bin/javac javac $JAVA_DIR/bin/javac 1
+    else
+      echo "Skipping update-alternatives configuration"
   fi
   terminate 0
 fi
