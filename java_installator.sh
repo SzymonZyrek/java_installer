@@ -2,6 +2,7 @@
 
 #DEFAUTLS
 MODE="HELP"
+INSTALL_TYPE="jdk"
 VERSION_STRING="1.8"
 SCRIPT_ROOT_DIR=`pwd`
 VERSIONS_FILE="`pwd`/VERSIONS"
@@ -23,7 +24,25 @@ DOWNLOAD_STARTED=false
 
 #FUNCTIONS
 print_usage() {
-  echo "This program installs jdk on your machine. Usage: ./javaInstalator.sh -v <VERSION>"
+  print_line
+  echo "This program installs jdk on your machine. Usage: ./javaInstalator.sh -i|--install <VERSION>"
+  print_line
+  echo "Options:"
+  echo ""
+  echo "	-f|--fetch		: get all avaiable jdk versions from oracle"
+  echo "	-l|--list		: list all avaiable jdk versions"
+  echo "	-s|--search <STRING>	: filter avaiable jdk versions"
+  echo "	-d|--jdk <VERSION>	: installs selected <VERSION> of jdk"
+  echo "	-r|--jre <VERSION>	: installs selected <VERSION> of jre (NOT YET WORKING, FOR NOW ALSO INSTALLS JDK^^)"
+  echo "	-t|--target		: outpuf folder, where to install?"
+  echo "	-b|--bashrc		: adds \$JAVA_HOME to ~/.bashrc"
+  echo "	-B|--no-bashrc		: doesn't add \$JAVA_HOME to ~/.bashrc"
+  echo "	-u|--alternatives	: updates alternatives"
+  echo "	-B|--no-alternatives	: doesn't update alternatives"
+  echo "	-W|--no-warn		: don't warn about default target"
+  echo "	-S|--silent		: skip all warnings and dialogues"
+  echo "	-h|--help		: print this helpful message"
+  print_line
 }
 
 fetch_versions(){
@@ -87,7 +106,7 @@ while [[ $# > 0 ]]
 do
 key="$1"
 case $key in
-    -W|--dont-warn)
+    -W|--no-warn)
     DONT_ASK_WARNING="y"
     ;;
     -b|--bashr)
@@ -98,18 +117,18 @@ case $key in
     DO_BASHRC="n"
     DONT_ASK_BASHRC="y"
     ;;
-    -u|--help)
+    -u|--alternatives)
     DO_ALTERNATIVES="y"
     DONT_ASK_ALTERNATIVES="y"
     ;;
-    -U|--help)
+    -U|--no-alternatives)
     DO_ALTERNATIVES="n"
     DONT_ASK_ALTERNATIVES="y"
     ;;
     -h|--help)
     MODE="HELP"
     ;;
-    -s|--silent)
+    -S|--silent)
     DONT_ASK_ALTERNATIVES="y"
     DONT_ASK_BASHRC="y"
     DONT_ASK="y"
@@ -118,7 +137,7 @@ case $key in
     TARGET_DIR=$2
     shift
     ;;
-    -f|--fetch-versions)
+    -f|--fetch)
     MODE="FETCH_VERSIONS"
     ;;
     -s|--search)
@@ -129,9 +148,16 @@ case $key in
     -l|--list)
     MODE="LIST_VERSIONS"
     ;;
-    -v|--version)
+    -d|--jdk)
     VERSION_STRING="$2"
     MODE="INSTALL"
+    INSTALL_TYPE="jdk"
+    shift
+    ;;
+    -r|--jre)
+    VERSION_STRING="$2"
+    MODE="INSTALL"
+    INSTALL_TYPE="jre"
     shift
     ;;
     *)
@@ -156,7 +182,9 @@ then
   then
     echo ""
   else
+    print_line
     echo "Your VERSIONS file is empty, would you like to fetch avaiable versions now?(y/n)"
+    print_line
     ANSWER=$(read_yes_no)
     if [[ "$ANSWER" == "y" ]]
     then
@@ -193,7 +221,9 @@ then
   terminate 0
 elif [[ "$MODE" == "LIST_VERSIONS" ]]
 then
+  print_line
   echo "Avaiable versions:"
+  print_line
   while read LINE
   do
     VERSION=`echo $LINE | awk 'BEGIN{FS="#"}{print $1}'`
@@ -213,7 +243,9 @@ then
   #WARN IF DEAFAULT TARGET
   if [[ $TARGET_DIR == "/usr/lib/jvm" && $DONT_ASK_WARNING != "y" && $DONT_ASK != "y" ]]
   then
+    print_line
     echo "WARNINIG: you haven't selected --target installation directory, default value is /usr/lib/jvm. Is this ok?(y/n)"
+    print_line
     ANSWER=$(read_yes_no)
     if [[ "$ANSWER" == "n" ]]
     then
@@ -234,7 +266,9 @@ then
   if [[ "$UPDATE" == "" ]]
   then
     declare -a AVAIABLE_RELEASES=`get_avaiable_sub_versions_for_version $VERSION`
+    print_line
     echo "Avaiable sub-releases for version 1.$VERSIO: "
+    print_line
     echo $AVAIABLE_RELEASES | sed -e "s/\([0-9][0-9]\?\)/\n\t1.${VERSION}.0_\1/g"
     echo 
     echo "please pick one now by typing update number (last 2 digits)"
@@ -268,11 +302,15 @@ then
   sudo mkdir -p 2>/dev/null $TARGET_DIR
   if [[ "$DOWNLOADED_FILE" =~ ".tar.gz" ]]
   then
+    print_line
     echo "Unpacking $DOWNLOADED_FILE to $TARGET_DIR"
+    print_line
     UNPACKED_FILE_NAME=`sudo ${SCRIPT_ROOT_DIR}/unpacker.sh $DOWNLOADED_FILE $TARGET_DIR "tar -xzf "`
   elif [[ "$DOWNLOADED_FILE" =~ ".bin" ]]
   then
+    print_line
     echo "Installing $DOWNLOADED_FILE to $TARGET_DIR"
+    print_line
     sudo chmod +x ${DOWNLOADED_FILE}
     UNPACKED_FILE_NAME=`sudo ${SCRIPT_ROOT_DIR}/unpacker.sh $DOWNLOADED_FILE $TARGET_DIR "yes | sudo ./"` 
     sudo rm -rf 2>/dev/null ${DOWNLOADED_FILE}
@@ -283,7 +321,9 @@ then
   
 #CONFIGURATION
   JAVA_DIR=$UNPACKED_FILE_NAME
+  print_line
   printf "JDK 1.${VERSION}.0_${UPDATE} installed at $JAVA_DIR\n"
+  print_line
   #JAVA_HOME
   if [[ $DONT_ASK != "y" && $DONT_ASK_BASHRC != "y" ]]
   then
@@ -294,6 +334,7 @@ then
       DO_BASHRC="y"
     fi
   fi
+  print_line
   if [[ $DO_BASHRC == "y" ]]
   then
     echo "Setting \$JAVA_HOME to $JAVA_DIR"
@@ -301,6 +342,7 @@ then
   else
     echo "Skipping \$JAVA_HOME configuration"
   fi
+  print_line
   #UPDATE-ALTERNATIVES
   if [[ $DONT_ASK != "y" && $DONT_ASK_ALTERNATIVES != "y" ]]
   then
@@ -311,12 +353,16 @@ then
       DO_ALTERNATIVES="y"
     fi
   fi
+  print_line
   if [[ $DO_ALTERNATIVES == "y" ]]
     then
+      echo "sudo update-alternatives --install /usr/bin/java java $JAVA_DIR/bin/java 1"
+      echo "sudo update-alternatives --install /usr/bin/javac javac $JAVA_DIR/bin/javac 1"
       sudo update-alternatives --install /usr/bin/java java $JAVA_DIR/bin/java 1
       sudo update-alternatives --install /usr/bin/javac javac $JAVA_DIR/bin/javac 1
     else
       echo "Skipping update-alternatives configuration"
   fi
+  print_line
   terminate 0
 fi
