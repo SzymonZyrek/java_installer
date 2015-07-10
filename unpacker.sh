@@ -7,7 +7,8 @@ mkdir ${WHERE}/tmp
 cp $WHAT $WHERE/tmp
 cd $WHERE/tmp
 DO_UNPACK=$HOW
-eval "$DO_UNPACK $WHAT"
+#exit 0
+eval "${DO_UNPACK}${WHAT} &>/dev/null"
 rm -rf $WHAT
 UNPACKED=`ls`
 mv $UNPACKED ..

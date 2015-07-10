@@ -4,6 +4,10 @@ SITES_FILE="$STARTING_DIR/SITES"
 VERSIONS_FILE_JDK="$STARTING_DIR/JDK_REPOSITORY"
 VERSIONS_FILE_JRE="$STARTING_DIR/JRE_REPOSITORY"
 
+kinda_curl(){
+  wget 1>/dev/null 2>/dev/null -O file.tmp $1 ; cat file.tmp ; rm file.tmp
+}
+
 source temp_workdirs.sh
 setup_temp_workdir "links_getter"
 
@@ -41,7 +45,7 @@ rm -rf 2>/dev/null $VERSIONS_FILE_JRE
 #GET ALL DOWNLOAD LINKS
 while read LINE
 do
-  curl 2>/dev/null $LINE | sed -ne 's#.*"filepath":"\(http://download.oracle.com/otn\(-pub\)\?/java/jdk/[-_/a-z0-9]*\(\.tar\.gz\|\.bin\)\).*#\1#p' | grep $SYSTEM | grep $ARCH | grep -v 'rpm'| grep -v 'demos' >> ALL_LINKS
+   kinda_curl $LINE | sed -ne 's#.*"filepath":"\(http://download.oracle.com/otn\(-pub\)\?/java/jdk/[-_/a-z0-9]*\(\.tar\.gz\|\.bin\)\).*#\1#p' | grep $SYSTEM | grep $ARCH | grep -v 'rpm'| grep -v 'demos' >> ALL_LINKS
 done < $SITES_FILE
 
 while read LINE

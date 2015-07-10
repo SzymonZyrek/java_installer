@@ -24,7 +24,7 @@ fetch_versions(){
   cd $SCRIPT_ROOT_DIR
   rm -rf 2>/dev/null $VERSIONS_FILE
   source get_links.sh
-  cp JDK_REPOSITORY $VERSIONS_FILE
+  cat JDK_REPOSITORY | awk 'BEGIN{FS="#"} {if (a != $1 || b != $2) print $0; a=$1; b=$2 }' > $VERSIONS_FILE
 }
 
 terminate(){
@@ -39,7 +39,7 @@ terminate(){
 trap terminate SIGINT
 
 download_java_from_url(){
-  CMD="wget --no-check-certificate --no-cookies --header \"Cookie: oraclelicense=accept-securebackup-cookie\"" 
+  CMD="wget --quiet --show-progress --no-check-certificate --no-cookies --header \"Cookie: oraclelicense=accept-securebackup-cookie\"" 
   CMD+=" $1"
   eval $CMD
 }
@@ -117,6 +117,7 @@ done
 #SOURCE DEPENDENCIES
 source temp_workdirs.sh
 source yes_no.sh
+source utils.sh
 setup_temp_workdir "java_installator"
 DOWNLOAD_STARTED=true
 if [[ -e $VERSIONS_FILE ]]
@@ -137,7 +138,9 @@ then
     fi
   fi
 else
+  print_line
   echo "You do not have VERSIONS file, would you like to fetch avaiable versions now?(y/n)"
+  print_line 
   ANSWER=$(read_yes_no)
   if [[ "$ANSWER" == "y" ]]
   then
@@ -152,7 +155,9 @@ if [[ "$MODE" == "FETCH_VERSIONS" ]]
 then
   fetch_versions
   COUNT=`cat $VERSIONS_FILE | wc -l`
+  print_line
   echo "Fetched $COUNT versions into $VERSIONS_FILE"
+  print_line
 elif [[ "$MODE" == "HELP" ]]
 then
   print_usage
@@ -201,7 +206,7 @@ then
   then
     declare -a AVAIABLE_RELEASES=`get_avaiable_sub_versions_for_version $VERSION`
     echo "Avaiable sub-releases for version 1.$VERSIO: "
-    echo $AVAIABLE_RELEASES | sed -e "s/\([0-9][0-9]\)/\n\t1.${VERSION}.0_\1/g"
+    echo $AVAIABLE_RELEASES | sed -e "s/\([0-9][0-9]\?\)/\n\t1.${VERSION}.0_\1/g"
     echo 
     echo "please pick one now by typing update number (last 2 digits)"
     while [[ "$UPDATE" == "" ]]
@@ -235,16 +240,13 @@ then
   if [[ "$DOWNLOADED_FILE" =~ ".tar.gz" ]]
   then
     echo "Unpacking $DOWNLOADED_FILE to $TARGET_DIR"
-    UNPACKED_FILE_NAME=`sudo ${SCRIPT_ROOT_DIR}/unpack_and_echo_path.sh $DOWNLOADED_FILE $TARGET_DIR "tar -xzf"`
+    UNPACKED_FILE_NAME=`sudo ${SCRIPT_ROOT_DIR}/unpacker.sh $DOWNLOADED_FILE $TARGET_DIR "tar -xzf "`
   elif [[ "$DOWNLOADED_FILE" =~ ".bin" ]]
   then
-    echo "Moving $DOWNLOADED_FILE to $TARGET_DIR"
-    sudo mv $DOWNLOADED_FILE $TARGET_DIR/
-    cd $TARGET_DIR
+    echo "Installing $DOWNLOADED_FILE to $TARGET_DIR"
     sudo chmod +x ${DOWNLOADED_FILE}
-    sudo ${TARGET_DIR}/${DOWNLOADED_FILE}
-    UNPACKED_FILE_NAME=`sudo ${SCRIPT_ROOT_DIR}/unpack_and_echo_path.sh ""` 
-    sudo rm -rf 2>/dev/null ${TARGET_DIR}/${DOWNLOADED_FILE}
+    UNPACKED_FILE_NAME=`sudo ${SCRIPT_ROOT_DIR}/unpacker.sh $DOWNLOADED_FILE $TARGET_DIR "yes | sudo ./"` 
+    sudo rm -rf 2>/dev/null ${DOWNLOADED_FILE}
   else
     echo "Broken file: $DOWNLOADED_FILE"
     terminate 1
