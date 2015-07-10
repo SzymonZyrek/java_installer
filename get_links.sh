@@ -74,8 +74,9 @@ do
     echo $ENTRY >> "$VERSIONS_FILE_JRE"
   fi
 done < ALL_LINKS
-cat $VERSIONS_FILE_JDK | awk 'BEGIN{FS="#"} {if (a != $1 || b != $2) print $0; a=$1; b=$2 }' > $STARTING_DIR/VERSIONS
-  #cat $VERSIONS_FILE_JDK | sort | uniq > $VERSIONS_FILE_JDK
-  #cat $VERSIONS_FILE_JRE | sort | uniq > $VERSIONS_FILE_JRE
+cat $VERSIONS_FILE_JDK | awk 'BEGIN{FS="#"} {if (a != $1 || b != $2) print $0; a=$1; b=$2 }' > $STARTING_DIR/JDK_VERSIONS
+cat $VERSIONS_FILE_JRE | awk 'BEGIN{FS="#"} {if (a != $1 || b != $2) print $0; a=$1; b=$2 }' > $STARTING_DIR/JRE_VERSIONS
+rm $VERSIONS_FILE_JDK
+rm $VERSIONS_FILE_JRE
 cd $STARTING_DIR
 destroy_temp_workdir

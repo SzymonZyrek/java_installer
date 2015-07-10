@@ -5,7 +5,7 @@ MODE="HELP"
 INSTALL_TYPE="jdk"
 VERSION_STRING="1.8"
 SCRIPT_ROOT_DIR=`pwd`
-VERSIONS_FILE="`pwd`/VERSIONS"
+VERSIONS_FILE="`pwd`/JDK_VERSIONS"
 TARGET_DIR=/usr/lib/jvm
 SITES_FILE="`pwd`/SITES"
 ALLVER_FILE=allver
@@ -158,6 +158,7 @@ case $key in
     VERSION_STRING="$2"
     MODE="INSTALL"
     INSTALL_TYPE="jre"
+    VERSIONS_FILE="`pwd`/JRE_VERSIONS"
     shift
     ;;
     *)
@@ -267,7 +268,7 @@ then
   then
     declare -a AVAIABLE_RELEASES=`get_avaiable_sub_versions_for_version $VERSION`
     print_line
-    echo "Avaiable sub-releases for version 1.$VERSIO: "
+    echo "Avaiable sub-releases for version 1.$VERSION: "
     print_line
     echo $AVAIABLE_RELEASES | sed -e "s/\([0-9][0-9]\?\)/\n\t1.${VERSION}.0_\1/g"
     echo 
@@ -357,9 +358,12 @@ then
   if [[ $DO_ALTERNATIVES == "y" ]]
     then
       echo "sudo update-alternatives --install /usr/bin/java java $JAVA_DIR/bin/java 1"
-      echo "sudo update-alternatives --install /usr/bin/javac javac $JAVA_DIR/bin/javac 1"
       sudo update-alternatives --install /usr/bin/java java $JAVA_DIR/bin/java 1
-      sudo update-alternatives --install /usr/bin/javac javac $JAVA_DIR/bin/javac 1
+      if [[ $INSTALL_TYPE == "jdk" ]]
+      then
+        echo "sudo update-alternatives --install /usr/bin/javac javac $JAVA_DIR/bin/javac 1"
+        sudo update-alternatives --install /usr/bin/javac javac $JAVA_DIR/bin/javac 1
+      fi
     else
       echo "Skipping update-alternatives configuration"
   fi
