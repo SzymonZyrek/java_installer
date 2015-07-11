@@ -63,7 +63,7 @@ terminate(){
 trap terminate SIGINT
 
 download_java_from_url(){
-  CMD="wget --quiet --show-progress --no-check-certificate --no-cookies --header \"Cookie: oraclelicense=accept-securebackup-cookie\"" 
+  CMD="wget -nv --no-check-certificate --no-cookies --header \"Cookie: oraclelicense=accept-securebackup-cookie\"" 
   CMD+=" $1"
   eval $CMD
 }
