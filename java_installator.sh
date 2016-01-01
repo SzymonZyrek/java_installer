@@ -339,7 +339,7 @@ then
   if [[ $DO_BASHRC == "y" ]]
   then
     echo "Setting \$JAVA_HOME to $JAVA_DIR"
-    echo "export JAVA_HOME=$JAVA_DIR" >> ~/.bashrc
+    echo "export JAVA_HOME=$JAVA_DIR" >> $HOME/.bashrc
   else
     echo "Skipping \$JAVA_HOME configuration"
   fi
