@@ -254,9 +254,9 @@ then
     fi
   fi
   #PARSE REQUESTED VERSION
-  if [[ `echo $VERSION_STRING | sed -e '/^\(1\.\)\?\([4-8]\)\(\.[0-9]_\([0-9][0-9]\)\)\?\(-[a-z][a-z]\)\?$/d' | wc -l` -eq 0 ]]
+  if [[ `echo $VERSION_STRING | sed -e '/^\(1\.\)\?\([4-8]\)\(\.[0-9]_\([0-9]\+\)\)\?\(-[a-z][a-z]\)\?$/d' | wc -l` -eq 0 ]]
   then
-    V_STRING_PROP=`echo $VERSION_STRING | sed -e 's/^\(1\.\)\?\([4-8]\)\(\.[0-9]_\([0-9][0-9]\)\)\?\(-[a-z][a-z]\)\?$/VERSION:\2,UPDATE:\4/'`
+    V_STRING_PROP=`echo $VERSION_STRING | sed -e 's/^\(1\.\)\?\([4-8]\)\(\.[0-9]_\([0-9]\+\)\)\?\(-[a-z][a-z]\)\?$/VERSION:\2,UPDATE:\4/'`
     VERSION=`echo $V_STRING_PROP | sed -e 's/VERSION:\([^,]*\),.*/\1/'`
     UPDATE=`echo $V_STRING_PROP | sed -e 's/.*UPDATE:\(.*\)$/\1/'`
   else
